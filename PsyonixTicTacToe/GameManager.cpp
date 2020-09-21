@@ -33,14 +33,15 @@ bool processWinner(char winner) {
 	}
 	char again;
 	std::cin >> again;
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	return (again == 'Y') ? true : false;
 }
 
 bool processUndo(TicTacToe& ttt) {
 	//Clear input buffer and ask to Undo. Return if successful- and print message if invalid request.
-	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	char undo;
 	std::cout << "Undo last move? Y if yes, any key if no." << std::endl;
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	std::cin >> undo;
 	if (undo == 'Y') {
 		if (ttt.undo()) { return true; }
