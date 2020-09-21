@@ -140,9 +140,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="TicTacToe.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GameManager.h" />
     <ClInclude Include="TicTacToe.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

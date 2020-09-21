@@ -1,34 +1,37 @@
 #include "TicTacToe.h"
+//Helper functions
+char swapPlayer(char curPlayer) { return (curPlayer == 'X') ? 'O' : 'X'; }
 
-
+//Defining Board
 Board::Board(int N, int M) : board(N, std::vector<char>(M, ' ')) { }
 int Board::getN() { return board.size(); }
 int Board::getM() {	return board[0].size(); }
 char Board::get(int n, int m) { return (n < getN() && m < getM() && m>=0 && n>=0) ? board[n][m] : 'e'; } //Will return 'e' for error if invalid
 void Board::place(int n, int m, char player) { board[n][m] = player; }
 
+//Defining TicTacToe
 TicTacToe::TicTacToe(int n, int m, int k) : board(n, m), K(k), player('X') {}
+char TicTacToe::getPlayer() { return player; }
 bool TicTacToe::move(int n, int m) {
+	//Place move, process player change, and add to moves stack for undo's
 	if (board.get(n, m) == ' ') {
 		board.place(n, m, player);
-		player = (player == 'X') ? 'O' : 'X'; //Swap player
-		moves.push_back(std::make_pair(n, m));
+		player = swapPlayer(player);
+		moves.push(std::make_pair(n, m));
 		return true;
 	}
 	return false;
 }
 bool TicTacToe::undo() {
+	//Undo move, process player change, and remove from move stack
 	if (moves.size() > 0) {
-		std::pair<int, int> move = moves.back();
+		std::pair<int, int> move = moves.top();
 		board.place(move.first, move.second, ' ');
-		player = (player == 'X') ? 'O' : 'X'; //Swap player
-		moves.pop_back();
+		player = swapPlayer(player);
+		moves.pop();
 		return true;
 	}
 	return false;
-}
-char TicTacToe::getPlayer() {
-	return player;
 }
 void TicTacToe::print() {
 	for (int n = 0; n < board.getN(); ++n) {
@@ -52,55 +55,35 @@ char TicTacToe::checkWin(int n, int m) {
 	/*Check for win by starting at most recent position, since that is the only way
 	* a win can occur. Then check horizontal, vertical, and both diagonals by iterating
 	* forwards and backwards to check for consecutive players. If K consecutive are
-	* counted, then return winner. This could have been written more elegantly,
-	* but is written to run in O(K).
+	* counted, then return winner.
 	*/
-	int toWin = K - 1;
 	char winner = (player == 'X') ? 'O' : 'X';
-	//Check horizontally
+	int toWinHor = K - 1, toWinVer = K - 1, toWinLDiag = K - 1, toWinRDiag = K - 1;
+	bool hor = true, ver = true, lDiag = true, rDiag = true;
+	//Check for increasing consecutive values
 	for (int i = 1; i < K; ++i) {
-		if (board.get(n, m + i) == winner) { --toWin; }
-		else { break; }
+		if (hor && board.get(n, m + i) == winner) { --toWinHor; }
+		else { hor = false; }
+		if (ver && board.get(n + i, m) == winner) { --toWinVer; }
+		else { ver = false; }
+		if (lDiag && board.get(n + i, m - i) == winner) { --toWinLDiag; }
+		else { lDiag = false; }
+		if (rDiag && board.get(n + i, m + i) == winner) { --toWinRDiag; }
+		else { rDiag = false; }
 	}
+	//Reset and check for decreasing consecutive values
+	hor = ver = lDiag = rDiag = true;
 	for (int i = 1; i < K; ++i) {
-		if (board.get(n, m - i) == winner) { --toWin; }
-		else { break; }
+		if (hor && board.get(n, m - i) == winner) { --toWinHor; }
+		else { hor = false; }
+		if (ver && board.get(n - i, m) == winner) { --toWinVer; }
+		else { ver = false; }
+		if (lDiag && board.get(n - i, m + i) == winner) { --toWinLDiag; }
+		else { lDiag = false; }
+		if (rDiag && board.get(n - i, m - i) == winner) { --toWinRDiag; }
+		else { rDiag = false; }
 	}
-	if (toWin) { toWin = K - 1; }
-	else { return winner; }
-	//Check vertically
-	for (int i = 1; i < K; ++i) {
-		if (board.get(n + i, m) == winner) { --toWin; }
-		else { break; }
-	}
-	for (int i = 1; i < K; ++i) {
-		if (board.get(n - i, m) == winner) { --toWin; }
-		else { break; }
-	}
-	if (toWin) { toWin = K - 1; }
-	else { return winner; }
-	//Check forward diag
-	for (int i = 1; i < K; ++i) {
-		if (board.get(n - i, m + i) == winner) { --toWin; }
-		else { break; }
-	}
-	for (int i = 1; i < K; ++i) {
-		if (board.get(n + i, m - i) == winner) { --toWin; }
-		else { break; }
-	}
-	if (toWin) { toWin = K - 1; }
-	else { return winner; }
-	//Check backward diag
-	for (int i = 1; i < K; ++i) {
-		if (board.get(n + i, m + i) == winner) { --toWin; }
-		else { break; }
-	}
-	for (int i = 1; i < K; ++i) {
-		if (board.get(n - i, m - i) == winner) { --toWin; }
-		else { break; }
-	}
-	if (toWin) { toWin = K - 1; }
-	else { return winner; }
+	if (!toWinHor || !toWinVer || !toWinLDiag || !toWinRDiag) { return winner; }
 	//Make sure board isn't full, signifying a draw
 	for (int n = 0; n < board.getN(); ++n) {
 		for (int m = 0; m < board.getM(); ++m) {

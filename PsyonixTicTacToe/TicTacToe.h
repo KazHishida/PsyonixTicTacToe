@@ -2,7 +2,8 @@
 #define TICTACTOE_H
 #include <vector>
 #include <iostream>
-#include <utility>
+#include <stack>
+//Board class stores info about tic tac toe board and methods to pull/place data
 class Board {
 public:
 	Board(int N, int M);
@@ -13,6 +14,7 @@ public:
 private:
 	std::vector<std::vector<char>> board;
 };
+//TicTacToe class stores board and other game data
 class TicTacToe {
 	public:
 		TicTacToe(int N, int M, int K);
@@ -25,6 +27,6 @@ class TicTacToe {
 		Board board;
 		int K;
 		char player;
-		std::vector<std::pair<int, int>> moves;
+		std::stack<std::pair<int, int>> moves;
 };
 #endif
